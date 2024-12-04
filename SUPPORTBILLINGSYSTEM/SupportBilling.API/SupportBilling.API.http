@@ -1,0 +1,6 @@
+@SupportBilling.API_HostAddress = http://localhost:5229
+
+GET {{SupportBilling.API_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
