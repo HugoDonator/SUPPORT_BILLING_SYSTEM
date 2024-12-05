@@ -1,15 +1,34 @@
+using Microsoft.EntityFrameworkCore;
+using SupportBilling.APPLICATION.Contract;
+using SupportBilling.APPLICATION.Services;
+using SupportBilling.INFRASTRUCTURE.Context;
+using SupportBilling.INFRASTRUCTURE.Interfaces;
+using SupportBilling.INFRASTRUCTURE.Repositories;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+// Configuración de la cadena de conexión y DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Registrar servicios de la capa APPLICATION
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+
+// Registrar repositorios de la capa INFRASTRUCTURE
+builder.Services.AddScoped<IClientRepository, ClientRepository>();
+builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
+builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
+
+// Configurar controladores y Swagger
 builder.Services.AddControllers();
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configurar middleware
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -17,9 +36,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();
