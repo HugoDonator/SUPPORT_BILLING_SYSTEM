@@ -22,35 +22,21 @@ namespace SupportBilling.API.Controllers
             return Ok(invoices);
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetInvoiceById(int id)
-        {
-            var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
-            if (invoice == null) return NotFound();
-            return Ok(invoice);
-        }
-
         [HttpPost]
-        public async Task<IActionResult> CreateInvoice([FromBody] InvoiceDto invoiceDto)
+        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto invoiceDto)
         {
             await _invoiceService.CreateInvoiceAsync(invoiceDto);
-            return CreatedAtAction(nameof(GetInvoiceById), new { id = invoiceDto.Id }, invoiceDto);
+            return Ok("Factura creada exitosamente");
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInvoice(int id, [FromBody] InvoiceDto invoiceDto)
+        [HttpPost("{id}/payments")]
+        public async Task<IActionResult> RegisterPayment(int id, [FromBody] CreatePaymentDto paymentDto)
         {
-            if (id != invoiceDto.Id) return BadRequest();
-            await _invoiceService.UpdateInvoiceAsync(invoiceDto);
-            return NoContent();
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteInvoice(int id)
-        {
-            await _invoiceService.DeleteInvoiceAsync(id);
-            return NoContent();
+            paymentDto.InvoiceId = id;
+            await _invoiceService.RegisterPaymentAsync(paymentDto);
+            return Ok("Pago registrado exitosamente");
         }
     }
+
 
 }

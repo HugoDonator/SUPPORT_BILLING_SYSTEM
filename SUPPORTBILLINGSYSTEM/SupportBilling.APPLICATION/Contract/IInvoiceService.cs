@@ -10,10 +10,8 @@ namespace SupportBilling.APPLICATION.Contract
     public interface IInvoiceService
     {
         Task<IEnumerable<InvoiceDto>> GetAllInvoicesAsync();
-        Task<InvoiceDto> GetInvoiceByIdAsync(int id);
-        Task CreateInvoiceAsync(InvoiceDto invoiceDto);
-        Task UpdateInvoiceAsync(InvoiceDto invoiceDto);
-        Task DeleteInvoiceAsync(int id);
+        Task CreateInvoiceAsync(CreateInvoiceDto invoiceDto);
+        Task RegisterPaymentAsync(CreatePaymentDto paymentDto);
     }
 
 }

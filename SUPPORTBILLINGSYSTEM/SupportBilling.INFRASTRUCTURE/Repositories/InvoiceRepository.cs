@@ -11,9 +11,20 @@ namespace SupportBilling.INFRASTRUCTURE.Repositories
 {
     public class InvoiceRepository : BaseRepository<Invoice>, IInvoiceRepository
     {
-        public InvoiceRepository(AppDbContext context) : base(context) { }
+        private readonly AppDbContext _context;
 
-        // Métodos específicos de Invoice, si es necesario
+        public InvoiceRepository(AppDbContext context) : base(context)
+        {
+            _context = context;
+        }
+
+        // Método para agregar un detalle de factura
+        public async Task AddDetailAsync(InvoiceDetail detail)
+        {
+            await _context.InvoiceDetails.AddAsync(detail);
+            await _context.SaveChangesAsync();
+        }
     }
+
 
 }

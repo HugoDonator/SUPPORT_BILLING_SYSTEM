@@ -43,12 +43,15 @@ namespace SupportBilling.APPLICATION.Services
 
         public async Task CreateServiceAsync(ServiceDto serviceDto)
         {
-            var service = new Service
+            // Crea una nueva instancia de Service y asigna sus propiedades
+            var newService = new SupportBilling.DOMAIN.Entities.Service
             {
                 Name = serviceDto.Name,
                 Price = serviceDto.Price
             };
-            await _serviceRepository.AddAsync(service);
+
+            // Llama al repositorio para agregar el servicio
+            await _serviceRepository.AddAsync(newService);
         }
 
         public async Task UpdateServiceAsync(ServiceDto serviceDto)

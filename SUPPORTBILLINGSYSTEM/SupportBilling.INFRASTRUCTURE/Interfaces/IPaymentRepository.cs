@@ -8,9 +8,8 @@ using System.Threading.Tasks;
 
 namespace SupportBilling.INFRASTRUCTURE.Interfaces
 {
-    public interface IInvoiceRepository : IRepository<Invoice>
+    public interface IPaymentRepository : IRepository<Payment>
     {
-        Task AddDetailAsync(InvoiceDetail detail);
+        Task<decimal> GetTotalPaidByInvoiceIdAsync(int invoiceId);
     }
-
 }

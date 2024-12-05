@@ -12,8 +12,6 @@ namespace SupportBilling.INFRASTRUCTURE.Repositories
     public class ClientRepository : BaseRepository<Client>, IClientRepository
     {
         public ClientRepository(AppDbContext context) : base(context) { }
-
-        // Métodos específicos de Client, si es necesario
     }
 
 }

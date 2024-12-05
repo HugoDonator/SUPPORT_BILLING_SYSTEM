@@ -13,6 +13,8 @@ namespace SupportBilling.DOMAIN.Entities
         public Client Client { get; set; }
         public DateTime InvoiceDate { get; set; }
         public decimal TotalAmount { get; set; }
+
+        public string Status { get; set; } = "Pendiente";
     }
 
 }
