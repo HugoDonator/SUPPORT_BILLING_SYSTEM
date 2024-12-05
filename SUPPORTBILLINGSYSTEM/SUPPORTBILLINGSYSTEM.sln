@@ -3,13 +3,15 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.11.35303.130
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBilling.API", "SupportBilling.API\SupportBilling.API.csproj", "{600A9B8E-8E14-4934-AF4F-66785C8526F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupportBilling.API", "SupportBilling.API\SupportBilling.API.csproj", "{600A9B8E-8E14-4934-AF4F-66785C8526F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBilling.APPLICATION", "SupportBilling.APPLICATION\SupportBilling.APPLICATION.csproj", "{7C81EA6C-D42E-4D78-A41F-39DB591A2717}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupportBilling.APPLICATION", "SupportBilling.APPLICATION\SupportBilling.APPLICATION.csproj", "{7C81EA6C-D42E-4D78-A41F-39DB591A2717}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBilling.DOMAIN", "SupportBilling.DOMAIN\SupportBilling.DOMAIN.csproj", "{91AF621C-3F2C-4FD3-9484-5FBB37E9656C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupportBilling.DOMAIN", "SupportBilling.DOMAIN\SupportBilling.DOMAIN.csproj", "{91AF621C-3F2C-4FD3-9484-5FBB37E9656C}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBilling.INFRASTRUCTURE", "SupportBilling.INFRASTRUCTURE\SupportBilling.INFRASTRUCTURE.csproj", "{E2CAF784-B7E1-4CA2-B433-0221C6B292FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SupportBilling.INFRASTRUCTURE", "SupportBilling.INFRASTRUCTURE\SupportBilling.INFRASTRUCTURE.csproj", "{E2CAF784-B7E1-4CA2-B433-0221C6B292FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SupportBilling.Web", "SupportBilling.Web\SupportBilling.Web.csproj", "{A79E2556-5480-4EB9-B96B-26B6165D1D36}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{E2CAF784-B7E1-4CA2-B433-0221C6B292FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E2CAF784-B7E1-4CA2-B433-0221C6B292FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E2CAF784-B7E1-4CA2-B433-0221C6B292FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A79E2556-5480-4EB9-B96B-26B6165D1D36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A79E2556-5480-4EB9-B96B-26B6165D1D36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A79E2556-5480-4EB9-B96B-26B6165D1D36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A79E2556-5480-4EB9-B96B-26B6165D1D36}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
