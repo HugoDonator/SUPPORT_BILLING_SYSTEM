@@ -4,8 +4,8 @@ using SupportBilling.APPLICATION.Dtos;
 
 namespace SupportBilling.API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class InvoicesController : ControllerBase
     {
         private readonly IInvoiceService _invoiceService;
@@ -22,48 +22,40 @@ namespace SupportBilling.API.Controllers
             return Ok(invoices);
         }
 
-        [HttpPost]
-        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto invoiceDto)
-        {
-            await _invoiceService.CreateInvoiceAsync(invoiceDto);
-            return Ok("Factura creada exitosamente");
-        }
-
-        [HttpPost("{id}/payments")]
-        public async Task<IActionResult> RegisterPayment(int id, [FromBody] CreatePaymentDto paymentDto)
-        {
-            paymentDto.InvoiceId = id;
-            await _invoiceService.RegisterPaymentAsync(paymentDto);
-            return Ok("Pago registrado exitosamente");
-        }
-
         [HttpGet("{id}")]
         public async Task<IActionResult> GetInvoiceById(int id)
         {
             var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
             if (invoice == null)
-            {
-                return NotFound(); // Retorna 404 si no encuentra la factura
-            }
-            return Ok(invoice); // Retorna 200 con los datos
+                return NotFound();
+            return Ok(invoice);
         }
 
-        // NUEVO: Endpoint para marcar como pagada
-        [HttpPut("{id}/MarkAsPaid")]
-        public async Task<IActionResult> MarkAsPaid(int id)
+        [HttpPost]
+        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto invoiceDto)
         {
-            var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
 
-            if (invoice == null)
-            {
-                return NotFound($"No se encontró la factura con el ID {id}.");
-            }
+            await _invoiceService.CreateInvoiceAsync(invoiceDto);
+            return CreatedAtAction(nameof(GetInvoiceById), new { id = invoiceDto.Id }, invoiceDto);
+        }
 
-            // Actualiza el estado de la factura a "Pagada"
-            invoice.Status = "Pagada";
-            await _invoiceService.UpdateInvoiceAsync(invoice);
+        [HttpPut("{id}")]
+        public async Task<IActionResult> UpdateInvoice(int id, [FromBody] CreateInvoiceDto invoiceDto)
+        {
+            if (id != invoiceDto.Id)
+                return BadRequest();
 
-            return Ok("Factura marcada como pagada.");
+            await _invoiceService.UpdateInvoiceAsync(invoiceDto);
+            return NoContent();
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteInvoice(int id)
+        {
+            await _invoiceService.DeleteInvoiceAsync(id);
+            return NoContent();
         }
     }
 }

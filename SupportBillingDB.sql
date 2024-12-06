@@ -61,7 +61,7 @@ INSERT INTO Services (Name, Price) VALUES
 ('Data Recovery', 200.00);
 
 INSERT INTO Invoices (ClientId, InvoiceDate, TotalAmount) VALUES
-(1, GETDATE(), 150.00);
+(2, GETDATE(), 150.00);
 
 INSERT INTO InvoiceDetails (InvoiceId, ServiceId, Quantity, Price) VALUES
 (1, 1, 1, 50.00),
@@ -71,6 +71,10 @@ INSERT INTO Payments (InvoiceId, AmountPaid, PaymentDate) VALUES
 (1, 150.00, GETDATE());
 
 
+ALTER TABLE Invoices
+ADD Status NVARCHAR(50) NOT NULL DEFAULT 'Pendiente';
 
 
+select * from Invoices
+select * from InvoiceDetails
 

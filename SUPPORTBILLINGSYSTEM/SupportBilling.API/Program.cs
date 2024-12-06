@@ -1,10 +1,10 @@
 using Microsoft.EntityFrameworkCore;
 using SupportBilling.APPLICATION.Contract;
-using SupportBilling.APPLICATION.Service;
 using SupportBilling.APPLICATION.Services;
+using SupportBilling.DOMAIN.Core;
 using SupportBilling.INFRASTRUCTURE.Context;
-using SupportBilling.INFRASTRUCTURE.Interfaces;
 using SupportBilling.INFRASTRUCTURE.Repositories;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -21,7 +21,6 @@ builder.Services.AddScoped<IServiceService, ServiceService>();
 builder.Services.AddScoped<IClientRepository, ClientRepository>();
 builder.Services.AddScoped<IInvoiceRepository, InvoiceRepository>();
 builder.Services.AddScoped<IServiceRepository, ServiceRepository>();
-builder.Services.AddScoped<IPaymentRepository, PaymentRepository>();
 
 // Configurar controladores y Swagger
 builder.Services.AddControllers();

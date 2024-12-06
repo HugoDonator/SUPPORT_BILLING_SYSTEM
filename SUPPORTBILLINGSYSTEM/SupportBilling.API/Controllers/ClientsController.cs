@@ -1,11 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using SupportBilling.APPLICATION.Contract;
 using SupportBilling.APPLICATION.Dtos;
+using System;
+
+
 
 namespace SupportBilling.API.Controllers
 {
-    [ApiController]
     [Route("api/[controller]")]
+    [ApiController]
     public class ClientsController : ControllerBase
     {
         private readonly IClientService _clientService;
@@ -26,13 +30,17 @@ namespace SupportBilling.API.Controllers
         public async Task<IActionResult> GetClientById(int id)
         {
             var client = await _clientService.GetClientByIdAsync(id);
-            if (client == null) return NotFound();
+            if (client == null)
+                return NotFound();
             return Ok(client);
         }
 
         [HttpPost]
         public async Task<IActionResult> CreateClient([FromBody] ClientDto clientDto)
         {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
             await _clientService.CreateClientAsync(clientDto);
             return CreatedAtAction(nameof(GetClientById), new { id = clientDto.Id }, clientDto);
         }
@@ -40,7 +48,9 @@ namespace SupportBilling.API.Controllers
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateClient(int id, [FromBody] ClientDto clientDto)
         {
-            if (id != clientDto.Id) return BadRequest();
+            if (id != clientDto.Id)
+                return BadRequest();
+
             await _clientService.UpdateClientAsync(clientDto);
             return NoContent();
         }
@@ -52,6 +62,5 @@ namespace SupportBilling.API.Controllers
             return NoContent();
         }
     }
-
-
 }
+
