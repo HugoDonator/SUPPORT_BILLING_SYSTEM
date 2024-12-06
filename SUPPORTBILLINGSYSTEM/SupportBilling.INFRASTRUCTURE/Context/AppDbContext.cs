@@ -13,11 +13,13 @@ namespace SupportBilling.INFRASTRUCTURE.Context
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
+        public DbSet<Invoice> Invoices { get; set; }
         public DbSet<Client> Clients { get; set; }
         public DbSet<Service> Services { get; set; }
-        public DbSet<Invoice> Invoices { get; set; }
+       
         public DbSet<InvoiceDetail> InvoiceDetails { get; set; }
         public DbSet<Payment> Payments { get; set; }
+        
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -25,11 +27,13 @@ namespace SupportBilling.INFRASTRUCTURE.Context
                 .HasOne(i => i.Client)
                 .WithMany(c => c.Invoices)
                 .HasForeignKey(i => i.ClientId);
+               
 
             modelBuilder.Entity<InvoiceDetail>()
                 .HasOne(d => d.Invoice)
                 .WithMany(i => i.Details)
                 .HasForeignKey(d => d.InvoiceId);
+
 
             base.OnModelCreating(modelBuilder);
         }

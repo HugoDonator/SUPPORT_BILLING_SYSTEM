@@ -15,6 +15,14 @@ namespace SupportBilling.DOMAIN.Entities
         public decimal TotalAmount { get; set; }
         public string Status { get; set; }
         public ICollection<InvoiceDetail> Details { get; set; }
+
+        public decimal Subtotal { get; set; }
+        public decimal Tax { get; set; }
+        public decimal Total { get; set; }
+
+        public string ClientName { get; set; }
+        public DateTime CreatedDate { get; set; }
+     
     }
 
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SupportBilling.APPLICATION.Dtos;
+using SupportBilling.DOMAIN.Entities;
 using SupportBilling.Web.Models;
 using SupportBilling.Web.Services;
 using ClientDto = SupportBilling.Web.Models.ClientDto;
@@ -23,6 +24,16 @@ namespace SupportBilling.Web.Controllers
         public async Task<IActionResult> Index()
         {
             var invoices = await _apiService.GetAsync<List<InvoiceDto>>("Invoices");
+
+            foreach(var invoice in invoices)
+    {
+                if (invoice.Total == 0)
+                {
+                    // Calcula el total si no está definido
+                    invoice.Total = invoice.Subtotal + invoice.Tax;
+                }
+            }
+
             return View(invoices);
         }
 
@@ -32,7 +43,8 @@ namespace SupportBilling.Web.Controllers
             var invoice = await _apiService.GetAsync<InvoiceDto>($"Invoices/{id}");
             if (invoice == null)
             {
-                return NotFound();
+                TempData["ErrorMessage"] = "Factura no encontrada.";
+                return RedirectToAction("Index");
             }
             return View(invoice);
         }
@@ -40,95 +52,134 @@ namespace SupportBilling.Web.Controllers
         // GET: Crear Factura
         public async Task<IActionResult> Create()
         {
-            try
+            var clients = await _apiService.GetAsync<List<ClientDto>>("Clients");
+            var services = await _apiService.GetAsync<List<ServiceDto>>("Services");
+
+            if (clients == null || !clients.Any())
             {
-                var clients = await _apiService.GetAsync<List<ClientDto>>("Clients");
-                var services = await _apiService.GetAsync<List<ServiceDto>>("Services");
-
-                if (clients == null || clients.Count == 0)
-                {
-                    ModelState.AddModelError("", "No hay clientes disponibles. Registre clientes antes de crear una factura.");
-                }
-
-                if (services == null || services.Count == 0)
-                {
-                    ModelState.AddModelError("", "No hay servicios disponibles. Registre servicios antes de crear una factura.");
-                }
-
-                var model = new CreateInvoiceViewModel
-                {
-                    Clients = clients,
-                    Services = services,
-                    SelectedServices = new List<CreateInvoiceDetailDto>() // Inicializa la lista vacía
-                };
-
-                return View(model);
+                TempData["ErrorMessage"] = "No hay clientes disponibles. Registre clientes antes de crear una factura.";
+                return RedirectToAction("Index", "Clients");
             }
-            catch (Exception ex)
+
+            if (services == null || !services.Any())
             {
-                ModelState.AddModelError("", "Ocurrió un error al cargar los datos. " + ex.Message);
-                return RedirectToAction("Index");
+                TempData["ErrorMessage"] = "No hay servicios disponibles. Registre servicios antes de crear una factura.";
+                return RedirectToAction("Index", "Services");
             }
+
+            var model = new CreateInvoiceViewModel
+            {
+                Clients = clients,
+                Services = services,
+                SelectedServices = new List<CreateInvoiceDetailDto>()
+            };
+
+            return View(model);
         }
 
         // POST: Crear Factura
         [HttpPost]
         public async Task<IActionResult> Create(CreateInvoiceViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                var clients = await _apiService.GetAsync<List<ClientDto>>("Clients");
+                var services = await _apiService.GetAsync<List<ServiceDto>>("Services");
+                model.Clients = clients ?? new List<ClientDto>();
+                model.Services = services ?? new List<ServiceDto>();
+                return View(model);
+            }
+
+            // Calcular subtotal, impuesto y total
+            decimal subtotal = model.SelectedServices
+                .Where(service => model.Services.Any(s => s.Id == service.ServiceId))
+                .Sum(service => model.Services.First(s => s.Id == service.ServiceId).Price * service.Quantity);
+
+            decimal taxRate = 0.18m;
+            decimal tax = subtotal * taxRate;
+            decimal total = subtotal + tax;
+
+            var invoiceDetails = model.SelectedServices.Select(s => new CreateInvoiceDetailDto
+            {
+                ServiceId = s.ServiceId,
+                Quantity = s.Quantity
+            }).ToList();
+
+            var invoice = new CreateInvoiceDto
+            {
+                ClientId = model.SelectedClientId,
+                Details = invoiceDetails,
+                Subtotal = subtotal,
+                Tax = tax,
+                Total = total,
+                Status = "Pendiente"
+            };
+
             try
             {
-                if (!ModelState.IsValid)
-                {
-                    // Si el modelo no es válido, recargar datos y retornar vista con errores
-                    var clients = await _apiService.GetAsync<List<ClientDto>>("Clients");
-                    var services = await _apiService.GetAsync<List<ServiceDto>>("Services");
-                    model.Clients = clients;
-                    model.Services = services;
-                    return View(model);
-                }
-
-                // Cálculos necesarios para la factura
-                decimal subtotal = 0;
-                foreach (var service in model.SelectedServices)
-                {
-                    var selectedService = model.Services.FirstOrDefault(s => s.Id == service.ServiceId);
-                    if (selectedService != null)
-                    {
-                        subtotal += selectedService.Price * service.Quantity;
-                    }
-                }
-
-                decimal taxRate = 0.18m; // Tasa fija de impuestos del 18%
-                decimal tax = subtotal * taxRate;
-                decimal total = subtotal + tax;
-
-                // Mapeo de los detalles de la factura seleccionados
-                var invoiceDetails = model.SelectedServices.Select(s => new CreateInvoiceDetailDto
-                {
-                    ServiceId = s.ServiceId,
-                    Quantity = s.Quantity
-                }).ToList();
-
-                // Construcción de la factura completa para enviar a la API
-                var invoice = new CreateInvoiceDto
-                {
-                    ClientId = model.SelectedClientId,
-                    Details = invoiceDetails,
-                    Subtotal = subtotal,
-                    Tax = tax,
-                    Total = total
-                };
-
-                // Llamada a la API para guardar la factura
                 await _apiService.PostAsync("Invoices", invoice);
+                TempData["SuccessMessage"] = "Factura creada exitosamente.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError("", "Ocurrió un error al crear la factura. " + ex.Message);
+                ModelState.AddModelError("", "Ocurrió un error al guardar la factura. " + ex.Message);
                 return View(model);
             }
         }
+
+        // GET: Vista Previa de Factura
+        public IActionResult Preview()
+        {
+            if (TempData["InvoicePreview"] is not CreateInvoiceDto invoice)
+            {
+                TempData["ErrorMessage"] = "La información de la factura no está disponible.";
+                return RedirectToAction("Create");
+            }
+
+            return View(invoice);
+        }
+
+        // POST: Confirmar Factura
+        [HttpPost]
+        public async Task<IActionResult> Confirm()
+        {
+            if (TempData["InvoicePreview"] is not CreateInvoiceDto invoice)
+            {
+                TempData["ErrorMessage"] = "No se pudo recuperar la información de la factura para guardarla.";
+                return RedirectToAction("Create");
+            }
+
+            try
+            {
+                await _apiService.PostAsync("Invoices", invoice);
+                TempData["SuccessMessage"] = "Factura creada exitosamente.";
+                return RedirectToAction("Index");
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = "Ocurrió un error al confirmar la factura: " + ex.Message;
+                return RedirectToAction("Preview");
+            }
+        }
+
+        // GET: Marcar Factura como Pagada
+        public async Task<IActionResult> MarkAsPaid(int id)
+        {
+            try
+            {
+                Console.WriteLine($"Intentando marcar como pagada la factura con ID: {id}");
+
+                await _apiService.PutAsync<object>($"Invoices/{id}/MarkAsPaid", null);
+                TempData["SuccessMessage"] = "Factura marcada como pagada.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ErrorMessage"] = $"Ocurrió un error al marcar la factura como pagada. {ex.Message}";
+            }
+            return RedirectToAction("Index");
+        }
+
 
         // GET: Registrar un Pago
         public IActionResult Payments(int id)
@@ -144,6 +195,7 @@ namespace SupportBilling.Web.Controllers
             try
             {
                 await _apiService.PostAsync("Payments", paymentDto);
+                TempData["SuccessMessage"] = "Pago registrado exitosamente.";
                 return RedirectToAction("Index");
             }
             catch (Exception ex)

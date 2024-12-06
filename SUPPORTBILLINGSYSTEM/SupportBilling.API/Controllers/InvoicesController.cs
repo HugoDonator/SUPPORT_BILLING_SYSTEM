@@ -48,11 +48,22 @@ namespace SupportBilling.API.Controllers
             return Ok(invoice); // Retorna 200 con los datos
         }
 
+        // NUEVO: Endpoint para marcar como pagada
+        [HttpPut("{id}/MarkAsPaid")]
+        public async Task<IActionResult> MarkAsPaid(int id)
+        {
+            var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
 
+            if (invoice == null)
+            {
+                return NotFound($"No se encontró la factura con el ID {id}.");
+            }
 
+            // Actualiza el estado de la factura a "Pagada"
+            invoice.Status = "Pagada";
+            await _invoiceService.UpdateInvoiceAsync(invoice);
 
+            return Ok("Factura marcada como pagada.");
+        }
     }
-
-
-
 }

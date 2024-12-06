@@ -1,0 +1,33 @@
+﻿@model SupportBilling.Web.Models.CreateInvoiceDto
+
+<h2>Vista Previa de Factura</h2>
+
+<p><strong>Cliente:</strong> @Model.ClientId</p>
+<p><strong>Servicios:</strong></p>
+<ul>
+    @foreach (var detail in Model.Details)
+    {
+        <li>@detail.ServiceId - Cantidad: @detail.Quantity</li>
+    }
+</ul>
+<p><strong>Subtotal:</strong> @Model.Subtotal.ToString("C")</p>
+<p><strong>Impuesto:</strong> @Model.Tax.ToString("C")</p>
+<p><strong>Total:</strong> @Model.Total.ToString("C")</p>
+
+<div class="form-group">
+    <label for="Status">Estado</label>
+    <select asp-for="Status" class="form-control">
+        <option value="Pendiente" selected>Pendiente</option>
+        <option value="Pagada">Pagada</option>
+    </select>
+</div>
+
+<form asp-action="Confirm" method="post">
+    <input type="hidden" asp-for="ClientId" />
+    <input type="hidden" asp-for="Subtotal" />
+    <input type="hidden" asp-for="Tax" />
+    <input type="hidden" asp-for="Total" />
+    <input type="hidden" asp-for="Status" />
+    <button type="submit" class="btn btn-primary">Confirmar Factura</button>
+    <a asp-action="Create" class="btn btn-secondary">Editar</a>
+</form>

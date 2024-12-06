@@ -35,9 +35,21 @@ namespace SupportBilling.Web.Services
         // Método para realizar solicitudes PUT
         public async Task PutAsync<T>(string endpoint, T data)
         {
-            var content = new StringContent(JsonSerializer.Serialize(data), System.Text.Encoding.UTF8, "application/json");
-            var response = await _httpClient.PutAsync($"{_apiUrl}{endpoint}", content);
-            response.EnsureSuccessStatusCode();
+            try
+            {
+                var content = new StringContent(JsonSerializer.Serialize(data), System.Text.Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync($"{_apiUrl}{endpoint}", content);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    throw new Exception($"Error al realizar PUT en {endpoint}. Código de estado: {response.StatusCode}. Respuesta: {errorContent}");
+                }
+            }
+            catch (HttpRequestException ex)
+            {
+                throw new Exception($"Error de conexión al endpoint {endpoint}: {ex.Message}");
+            }
         }
 
         // Método para realizar solicitudes DELETE

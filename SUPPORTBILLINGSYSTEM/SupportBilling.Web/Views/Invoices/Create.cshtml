@@ -27,7 +27,7 @@
                         <option value="">Seleccione un servicio</option>
                         @foreach (var service in Model.Services)
                         {
-                            <option value="@service.Id">@service.Name</option>
+                            <option value="@service.Id" data-price="@service.Price">@service.Name</option>
                         }
                     </select>
                 </td>
@@ -58,56 +58,59 @@
         <span id="total">0.00</span>
     </div>
 
-    <button type="submit" class="btn btn-primary mt-3">Crear Factura</button>
+    <button type="submit" class="btn btn-primary mt-3">Guardar Factura</button>
 </form>
 
 @section Scripts {
-    <script>
-        // Almacenar servicios con precios en un objeto
-        const services = @Html.Raw(Json.Serialize(Model.Services.ToDictionary(s => s.Id, s => s.Price)));
+    @using System.Text.Json
 
-        // Generar un select con los servicios disponibles
+    <script>
+        // Serializar servicios desde el modelo
+       const services = @Html.Raw(JsonSerializer.Serialize(Model.Services ?? new List<ServiceDto>()));
+
+
+        // Generar selector de servicios dinámicamente
         function generateServiceSelect(index) {
             let options = '<option value="">Seleccione un servicio</option>';
-            for (const [id, price] of Object.entries(services)) {
-                options += `<option value="${id}">${id}</option>`;
-            }
+            services.forEach(service => {
+                options += `<option value="${service.Id}" data-price="${service.Price}">${service.Name}</option>`;
+            });
             return `<select name="SelectedServices[${index}].ServiceId" class="form-control service-select">${options}</select>`;
         }
 
+        // Recalcular subtotales, impuestos y totales
         function recalculateTotals() {
             let subtotal = 0;
 
-            // Recorrer cada fila de servicio y calcular subtotales
-            document.querySelectorAll("#service-list tr").forEach((row) => {
-                const serviceId = row.querySelector(".service-select").value;
-                const quantity = row.querySelector(".quantity-input").value;
+            document.querySelectorAll("#service-list tr").forEach(row => {
+                const serviceSelect = row.querySelector(".service-select");
+                const quantityInput = row.querySelector(".quantity-input");
+                const priceSpan = row.querySelector(".price");
 
-                if (serviceId && quantity > 0) {
-                    const price = services[serviceId] || 0;
-                    const lineTotal = price * quantity;
+                const selectedOption = serviceSelect?.options[serviceSelect.selectedIndex];
+                const price = parseFloat(selectedOption?.getAttribute("data-price")) || 0;
+                const quantity = parseInt(quantityInput.value) || 0;
 
-                    row.querySelector(".price").textContent = lineTotal.toFixed(2);
-                    subtotal += lineTotal;
-                }
+                const lineTotal = price * quantity;
+                priceSpan.textContent = lineTotal.toFixed(2);
+                subtotal += lineTotal;
             });
 
-            const taxRate = 0.18; // Tasa fija del 18%
+            const taxRate = 0.18;
             const tax = subtotal * taxRate;
             const total = subtotal + tax;
 
-            // Actualizar los valores en la vista
             document.getElementById("subtotal").textContent = subtotal.toFixed(2);
             document.getElementById("tax").textContent = tax.toFixed(2);
             document.getElementById("total").textContent = total.toFixed(2);
         }
 
-        // Añadir una nueva fila de servicio
+        // Añadir una nueva fila
         document.getElementById("add-service").addEventListener("click", function () {
             const tableBody = document.getElementById("service-list");
             const index = tableBody.querySelectorAll("tr").length;
-            const newRow = document.createElement("tr");
 
+            const newRow = document.createElement("tr");
             newRow.innerHTML = `
                 <td>${generateServiceSelect(index)}</td>
                 <td>
@@ -124,7 +127,7 @@
             tableBody.appendChild(newRow);
         });
 
-        // Eliminar una fila de servicio
+        // Eliminar una fila
         document.getElementById("service-list").addEventListener("click", function (e) {
             if (e.target.classList.contains("remove-service")) {
                 e.target.closest("tr").remove();

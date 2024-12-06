@@ -7,5 +7,7 @@
         public decimal Subtotal { get; set; }
         public decimal Tax { get; set; }
         public decimal Total { get; set; }
+
+        public string Status { get; set; }
     }
 }

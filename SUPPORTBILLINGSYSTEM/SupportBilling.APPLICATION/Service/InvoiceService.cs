@@ -1,4 +1,5 @@
-﻿using SupportBilling.APPLICATION.Contract;
+﻿using Fluent.Infrastructure.FluentModel;
+using SupportBilling.APPLICATION.Contract;
 using SupportBilling.APPLICATION.Dtos;
 using SupportBilling.DOMAIN.Entities;
 using SupportBilling.INFRASTRUCTURE.Interfaces;
@@ -7,11 +8,16 @@ namespace SupportBilling.APPLICATION.Service
 {
     public class InvoiceService : IInvoiceService
     {
+        private readonly ApplicationDbContext _dbContext;
+
         private readonly IInvoiceRepository _invoiceRepository;
         private readonly IClientRepository _clientRepository;
         private readonly IServiceRepository _serviceRepository;
         private readonly IPaymentRepository _paymentRepository;
-
+        public InvoiceService(ApplicationDbContext dbContext)
+        {
+            _dbContext = dbContext;
+        }
         public InvoiceService(
             IInvoiceRepository invoiceRepository,
             IClientRepository clientRepository,
@@ -140,5 +146,24 @@ namespace SupportBilling.APPLICATION.Service
                 }).ToList()
             };
         }
+
+        public async Task UpdateInvoiceAsync(InvoiceDto invoiceDto)
+        {
+            // Busca la factura en la base de datos
+            var invoice = await _dbContext.Invoices.FindAsync(invoiceDto.Id);
+
+            if (invoice == null)
+            {
+                throw new Exception($"Factura con ID {invoiceDto.Id} no encontrada.");
+            }
+
+            // Actualiza los campos necesarios
+            invoice.Status = invoiceDto.Status;
+            invoice.Total = invoiceDto.Total;
+
+            // Guarda los cambios
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

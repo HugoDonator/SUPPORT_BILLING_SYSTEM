@@ -9,6 +9,9 @@
         public decimal TotalAmount { get; set; } // Monto total de la factura
         public string Status { get; set; } // Estado de la factura (Pendiente, Pagada, etc.)
         public List<InvoiceDetailDto> Details { get; set; } // Detalles de los servicios facturados
+        public decimal Total { get; set; }
+        public decimal Subtotal { get; set; }
+        public decimal Tax { get; set; }
     }
 
     

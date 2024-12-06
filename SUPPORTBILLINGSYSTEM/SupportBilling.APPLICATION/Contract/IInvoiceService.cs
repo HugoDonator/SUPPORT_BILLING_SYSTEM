@@ -1,4 +1,5 @@
 ﻿using SupportBilling.APPLICATION.Dtos;
+using SupportBilling.DOMAIN.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,9 @@ namespace SupportBilling.APPLICATION.Contract
         Task RegisterPaymentAsync(CreatePaymentDto paymentDto);
         Task<InvoiceDto> GetInvoiceByIdAsync(int id);
 
+        Task UpdateInvoiceAsync(InvoiceDto invoiceDto);
+        Task UpdateAsync(Invoice invoice); // Método para actualizar la factura
+        Task AddDetailAsync(InvoiceDetail detail);
     }
 
 }
