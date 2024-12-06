@@ -6,4 +6,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\SupportBilling.APPLICATION\SupportBilling.APPLICATION.csproj" />
+  </ItemGroup>
+
 </Project>

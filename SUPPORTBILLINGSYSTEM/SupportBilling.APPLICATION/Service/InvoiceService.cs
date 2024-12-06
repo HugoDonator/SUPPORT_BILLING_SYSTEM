@@ -48,7 +48,7 @@ namespace SupportBilling.APPLICATION.Service
                 {
                     ServiceId = detail.ServiceId,
                     Quantity = detail.Quantity,
-                    Price = service.Price
+                    UnitPrice = service.Price // Usamos "UnitPrice" en lugar de "Price"
                 });
             }
 
@@ -61,7 +61,8 @@ namespace SupportBilling.APPLICATION.Service
             {
                 ClientId = invoiceDto.ClientId,
                 InvoiceDate = DateTime.Now,
-                TotalAmount = totalWithTax
+                TotalAmount = totalWithTax,
+                Status = "Pendiente" // Estado inicial de la factura
             };
 
             await _invoiceRepository.AddAsync(invoice);
@@ -109,10 +110,35 @@ namespace SupportBilling.APPLICATION.Service
             {
                 Id = i.Id,
                 ClientId = i.ClientId,
-                ClientName = i.Client.Name,
+                ClientName = i.Client?.Name,
                 InvoiceDate = i.InvoiceDate,
-                TotalAmount = i.TotalAmount
+                TotalAmount = i.TotalAmount,
+                Status = i.Status // Incluye el estado
             });
+        }
+
+        // Obtener una factura por ID
+        public async Task<InvoiceDto> GetInvoiceByIdAsync(int id)
+        {
+            var invoice = await _invoiceRepository.GetByIdAsync(id);
+            if (invoice == null) return null;
+
+            return new InvoiceDto
+            {
+                Id = invoice.Id,
+                ClientId = invoice.ClientId,
+                ClientName = invoice.Client?.Name,
+                InvoiceDate = invoice.InvoiceDate,
+                TotalAmount = invoice.TotalAmount,
+                Status = invoice.Status,
+                Details = invoice.Details?.Select(d => new InvoiceDetailDto
+                {
+                    Id = d.Id,
+                    ServiceName = d.Service?.Name,
+                    Quantity = d.Quantity,
+                    UnitPrice = d.UnitPrice,
+                }).ToList()
+            };
         }
     }
 }

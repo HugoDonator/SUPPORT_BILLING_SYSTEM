@@ -21,9 +21,17 @@ namespace SupportBilling.INFRASTRUCTURE.Context
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Client)
+                .WithMany(c => c.Invoices)
+                .HasForeignKey(i => i.ClientId);
 
-            // Configuración adicional si es necesario
+            modelBuilder.Entity<InvoiceDetail>()
+                .HasOne(d => d.Invoice)
+                .WithMany(i => i.Details)
+                .HasForeignKey(d => d.InvoiceId);
+
+            base.OnModelCreating(modelBuilder);
         }
     }
 

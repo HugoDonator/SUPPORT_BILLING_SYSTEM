@@ -36,7 +36,23 @@ namespace SupportBilling.API.Controllers
             await _invoiceService.RegisterPaymentAsync(paymentDto);
             return Ok("Pago registrado exitosamente");
         }
+
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetInvoiceById(int id)
+        {
+            var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
+            if (invoice == null)
+            {
+                return NotFound(); // Retorna 404 si no encuentra la factura
+            }
+            return Ok(invoice); // Retorna 200 con los datos
+        }
+
+
+
+
     }
+
 
 
 }

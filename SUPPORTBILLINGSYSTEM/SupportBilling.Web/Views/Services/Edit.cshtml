@@ -1,0 +1,19 @@
+﻿@model SupportBilling.Web.Models.ServiceDto
+
+<h1 class="text-center my-4">Editar Servicio</h1>
+
+<form asp-action="Edit" method="post" class="needs-validation" novalidate>
+    <input type="hidden" asp-for="Id" />
+    <div class="form-group mb-3">
+        <label for="Name">Nombre del Servicio</label>
+        <input type="text" class="form-control" id="Name" asp-for="Name" placeholder="Ingrese el nombre del servicio" required />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Price">Precio</label>
+        <input type="number" class="form-control" id="Price" asp-for="Price" placeholder="Ingrese el precio del servicio" step="0.01" required />
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a href="@Url.Action("Index", "Services")" class="btn btn-secondary">Cancelar</a>
+</form>

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace SupportBilling.DOMAIN.Core
 {
-    public interface IRepository<T> where T : BaseEntity
+    public interface IRepository<T> where T : class
     {
-        Task<IEnumerable<T>> GetAllAsync();
+        Task<List<T>> GetAllAsync(); // Firma del método
         Task<T> GetByIdAsync(int id);
         Task AddAsync(T entity);
         Task UpdateAsync(T entity);

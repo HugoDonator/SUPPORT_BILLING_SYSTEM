@@ -1,0 +1,33 @@
+﻿@model List<SupportBilling.Web.Models.InvoiceDto>
+
+<h1>Facturas</h1>
+
+<a href="@Url.Action("Create", "Invoices")" class="btn btn-primary mb-3">Crear Factura</a>
+
+<table class="table table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Fecha</th>
+            <th>Monto Total</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invoice in Model)
+        {
+            <tr>
+                <td>@invoice.Id</td>
+                <td>@invoice.ClientName</td>
+                <td>@invoice.InvoiceDate.ToShortDateString()</td>
+                <td>@invoice.TotalAmount.ToString("C")</td>
+                <td>@invoice.Status</td>
+                <td>
+                    <a href="@Url.Action("Details", "Invoices", new { id = invoice.Id })" class="btn btn-info btn-sm">Detalles</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>

@@ -12,6 +12,8 @@ namespace SupportBilling.APPLICATION.Contract
         Task<IEnumerable<InvoiceDto>> GetAllInvoicesAsync();
         Task CreateInvoiceAsync(CreateInvoiceDto invoiceDto);
         Task RegisterPaymentAsync(CreatePaymentDto paymentDto);
+        Task<InvoiceDto> GetInvoiceByIdAsync(int id);
+
     }
 
 }

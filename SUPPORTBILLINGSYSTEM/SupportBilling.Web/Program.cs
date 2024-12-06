@@ -1,5 +1,9 @@
+using SupportBilling.Web.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
+// Registrar HttpClient y ApiService
+builder.Services.AddHttpClient<ApiService>();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 

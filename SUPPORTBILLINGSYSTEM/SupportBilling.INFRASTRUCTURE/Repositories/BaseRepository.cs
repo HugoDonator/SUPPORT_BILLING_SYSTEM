@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SupportBilling.INFRASTRUCTURE.Repositories
 {
-    public class BaseRepository<T> : IRepository<T> where T : BaseEntity
+    public class BaseRepository<T> : IRepository<T> where T : class
     {
         protected readonly AppDbContext _context;
 
@@ -18,7 +18,7 @@ namespace SupportBilling.INFRASTRUCTURE.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<T>> GetAllAsync()
+        public async Task<List<T>> GetAllAsync()
         {
             return await _context.Set<T>().ToListAsync();
         }
