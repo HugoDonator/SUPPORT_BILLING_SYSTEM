@@ -1,0 +1,41 @@
+﻿@model IEnumerable<SupportBilling.Web.Models.ClientViewModel>
+
+@{
+    ViewData["Title"] = "Clients List";
+}
+
+<h1>Clients List</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Actions</th> <!-- Columna para los botones de acción -->
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var client in Model)
+        {
+            <tr>
+                <td>@client.Name</td>
+                <td>@client.Email</td>
+                <td>@client.Phone</td>
+                <td>
+                    <!-- Botón de editar -->
+                    <a href="@Url.Action("Edit", "Clients", new { id = client.Id })" class="btn btn-warning btn-sm">Edit</a>
+
+                    <!-- Formulario para eliminar el cliente -->
+                    <form asp-controller="Clients" asp-action="Delete" method="post" style="display:inline;">
+                        <input type="hidden" name="id" value="@client.Id" />
+                        <input type="hidden" name="_method" value="DELETE" />  <!-- Esto simula el método DELETE -->
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a href="@Url.Action("Create", "Clients")" class="btn btn-primary">Create New Client</a>

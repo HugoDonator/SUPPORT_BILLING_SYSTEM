@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SupportBilling.APPLICATION.Contract;
-using SupportBilling.APPLICATION.Dtos;
+using SupportBilling.DOMAIN.Entities;
 
 namespace SupportBilling.API.Controllers
 {
-    [Route("api/[controller]")]
     [ApiController]
+    [Route("api/[controller]")]
     public class InvoicesController : ControllerBase
     {
         private readonly IInvoiceService _invoiceService;
@@ -16,43 +16,51 @@ namespace SupportBilling.API.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> GetAllInvoices()
+        public async Task<IActionResult> GetAll()
         {
             var invoices = await _invoiceService.GetAllInvoicesAsync();
             return Ok(invoices);
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> GetInvoiceById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
             var invoice = await _invoiceService.GetInvoiceByIdAsync(id);
-            if (invoice == null)
-                return NotFound();
+            if (invoice == null) return NotFound();
             return Ok(invoice);
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateInvoice([FromBody] CreateInvoiceDto invoiceDto)
+        public async Task<IActionResult> Add(Invoice invoice)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
+            await _invoiceService.AddInvoiceAsync(invoice);
+            return CreatedAtAction(nameof(GetById), new { id = invoice.Id }, invoice);
+        }
 
-            await _invoiceService.CreateInvoiceAsync(invoiceDto);
-            return CreatedAtAction(nameof(GetInvoiceById), new { id = invoiceDto.Id }, invoiceDto);
+        [HttpPost("generate")]
+        public async Task<IActionResult> GenerateInvoice(int clientId, [FromBody] List<InvoiceDetail> details, decimal taxRate)
+        {
+            try
+            {
+                var invoice = await _invoiceService.GenerateInvoiceAsync(clientId, details, taxRate);
+                return Ok(invoice);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateInvoice(int id, [FromBody] CreateInvoiceDto invoiceDto)
+        public async Task<IActionResult> Update(int id, Invoice invoice)
         {
-            if (id != invoiceDto.Id)
-                return BadRequest();
-
-            await _invoiceService.UpdateInvoiceAsync(invoiceDto);
+            if (id != invoice.Id) return BadRequest("Invoice ID mismatch.");
+            await _invoiceService.UpdateInvoiceAsync(invoice);
             return NoContent();
         }
 
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteInvoice(int id)
+        public async Task<IActionResult> Delete(int id)
         {
             await _invoiceService.DeleteInvoiceAsync(id);
             return NoContent();
