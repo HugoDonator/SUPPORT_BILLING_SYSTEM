@@ -9,28 +9,29 @@
 
 <div class="row">
     <div class="col-md-6">
-        <form asp-controller="Invoices" asp-action="Create" method="post">
+        <form id="invoiceForm">
             <!-- Client -->
             <div class="form-group mb-3">
-                <label asp-for="ClientId">Client</label>
-                <select asp-for="ClientId" asp-items="ViewBag.Clients" class="form-control">
+                <label for="ClientId">Client</label>
+                <select id="ClientId" class="form-control">
                     <option value="">-- Select Client --</option>
+                    @foreach (var client in ViewBag.Clients)
+                    {
+                        <option value="@client.Value">@client.Text</option>
+                    }
                 </select>
-                <span asp-validation-for="ClientId" class="text-danger"></span>
             </div>
 
             <!-- Invoice Date -->
             <div class="form-group mb-3">
-                <label asp-for="InvoiceDate">Invoice Date</label>
-                <input asp-for="InvoiceDate" type="date" class="form-control" />
-                <span asp-validation-for="InvoiceDate" class="text-danger"></span>
+                <label for="InvoiceDate">Invoice Date</label>
+                 <input id="InvoiceDate" type="date" class="form-control" value="@DateTime.Now.ToString("yyyy-MM-dd")" required />
             </div>
 
             <!-- Tax -->
             <div class="form-group mb-3">
-                <label asp-for="Tax">Tax (%)</label>
-                <input asp-for="Tax" class="form-control" oninput="calculateTotal()" />
-                <span asp-validation-for="Tax" class="text-danger"></span>
+                <label for="Tax">Tax (%)</label>
+                <input id="Tax" type="number" class="form-control" oninput="calculateTotal()" />
             </div>
 
             <!-- Invoice Details -->
@@ -53,19 +54,28 @@
 
             <!-- Subtotal -->
             <div class="form-group mb-3">
-                <label asp-for="Subtotal">Subtotal</label>
-                <input id="Subtotal" asp-for="Subtotal" class="form-control" readonly />
+                <label for="Subtotal">Subtotal</label>
+                <input id="Subtotal" class="form-control" readonly />
             </div>
 
             <!-- Total Amount -->
             <div class="form-group mb-3">
-                <label asp-for="TotalAmount">Total Amount</label>
-                <input id="TotalAmount" asp-for="TotalAmount" class="form-control" readonly />
+                <label for="TotalAmount">Total Amount</label>
+                <input id="TotalAmount" class="form-control" readonly />
             </div>
 
-            <!-- Buttons -->
+            <div class="form-group mb-3">
+                <label for="Status">Status</label>
+                <select id="Status" class="form-control">
+                <option value="Pending">Pending</option>
+                <option value="Paid">Paid</option>
+                <option value="Canceled">Canceled</option>
+            </select>
+        </div>
+
+            <!-- Submit Button -->
             <button type="submit" class="btn btn-primary">Create</button>
-            <a asp-action="Index" class="btn btn-secondary">Back to Index</a>
+            <a href="/Invoices/Index" class="btn btn-secondary">Back to Index</a>
         </form>
     </div>
 </div>
@@ -74,6 +84,47 @@
     <script>
         const services = @Html.Raw(JsonSerializer.Serialize(ViewBag.Services));
         let detailIndex = 0;
+
+        document.getElementById("invoiceForm").addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            // Construir el objeto JSON
+            const invoice = {
+                ClientId: document.getElementById("ClientId").value,
+                InvoiceDate: document.getElementById("InvoiceDate").value,
+                Tax: parseFloat(document.getElementById("Tax").value || 0),
+                Status: document.getElementById("Status").value,
+                InvoiceDetails: []
+            };
+
+            document.querySelectorAll("#invoice-details-body tr").forEach(row => {
+                const serviceId = row.querySelector('[name*="ServiceId"]').value;
+                const quantity = row.querySelector('[name*="Quantity"]').value;
+                const price = row.querySelector('.price').value;
+
+                if (serviceId && quantity && price) {
+                    invoice.InvoiceDetails.push({
+                        ServiceId: parseInt(serviceId),
+                        Quantity: parseInt(quantity),
+                        Price: parseFloat(price)
+                    });
+                }
+            });
+
+            // Enviar los datos como JSON
+            const response = await fetch('/Invoices/Create', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(invoice)
+            });
+
+            if (response.ok) {
+                window.location.href = '/Invoices/Index';
+            } else {
+                const error = await response.text();
+                alert("Error al guardar la factura: " + error);
+            }
+        });
 
         function addInvoiceDetail() {
             const row = `
@@ -91,7 +142,7 @@
                         <input name="InvoiceDetails[${detailIndex}].Price" class="form-control price" readonly />
                     </td>
                     <td>
-                        <input name="InvoiceDetails[${detailIndex}].Total" class="form-control total" readonly />
+                        <input class="form-control total" readonly />
                     </td>
                     <td>
                         <button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button>

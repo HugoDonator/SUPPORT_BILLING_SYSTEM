@@ -1,22 +1,59 @@
-html {
-  font-size: 14px;
-}
-
-@media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
-}
-
-html {
-  position: relative;
-  min-height: 100%;
-}
-
 body {
-  margin-bottom: 60px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f6f9;
+    margin: 0;
+    padding: 0;
 }
+
+#sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 250px;
+    height: 100%;
+    background-color: #007bff; /* Fondo azul */
+    color: white;
+    padding-top: 50px;
+    border-radius: 0 10px 10px 0;
+}
+
+    #sidebar .sidebar-heading {
+        font-size: 1.5rem;
+        padding: 15px;
+        text-align: center;
+        font-weight: bold;
+    }
+
+    #sidebar .list-group-item {
+        background-color: #007bff;
+        color: white;
+        border: none;
+        font-size: 1.2rem;
+        border-radius: 0;
+    }
+
+        #sidebar .list-group-item:hover {
+            background-color: #0056b3;
+        }
+
+#page-content-wrapper {
+    margin-left: 250px;
+    padding: 20px;
+}
+
+.navbar {
+    background-color: #343a40;
+}
+
+    .navbar .navbar-brand {
+        color: white;
+    }
+
+    .navbar .navbar-nav .nav-item .nav-link {
+        color: #bbb;
+    }
+
+        .navbar .navbar-nav .nav-item .nav-link:hover {
+            background-color: #495057;
+            color: white;
+        }

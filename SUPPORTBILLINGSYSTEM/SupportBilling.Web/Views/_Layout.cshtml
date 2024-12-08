@@ -6,34 +6,58 @@
     <title>@ViewData["Title"] - SupportBilling.Web</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <div class="container">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">SupportBilling</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Clients" asp-action="Index">Clients</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Services" asp-action="Index">Services</a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
-        </nav>
-    </header>
+    <div id="wrapper">
+        <!-- Menu lateral -->
+        <div id="sidebar">
+            <div class="sidebar-heading">SupportBilling</div>
+            <ul class="list-group">
+                <li class="list-group-item">
+                    <i class="bi bi-house-door"></i> <a href="@Url.Action("Index", "Home")">Home</a>
+                </li>
+                <li class="list-group-item">
+                    <i class="bi bi-person-lines-fill"></i> <a href="@Url.Action("Index", "Clients")">Clients</a>
+                </li>
+                <li class="list-group-item">
+                    <i class="bi bi-gear-fill"></i> <a href="@Url.Action("Index", "Services")">Services</a>
+                </li>
+                <li class="list-group-item">
+                    <i class="bi bi-file-earmark-text-fill"></i> <a href="@Url.Action("Index", "Invoices")">Invoices</a>
+                </li>
+            </ul>
+        </div>
 
-    <div class="container mt-4">
-        @RenderBody()
+        <!-- Contenido principal -->
+        <div id="page-content-wrapper">
+            <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+                <div class="container">
+                    <a class="navbar-brand" href="#">SupportBilling</a>
+                    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                        <span class="navbar-toggler-icon"></span>
+                    </button>
+                    <div class="collapse navbar-collapse" id="navbarNav">
+                        <ul class="navbar-nav">
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Clients</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Home</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="#">Services</a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Aquí va el contenido de la página -->
+            <div class="container mt-4">
+                @RenderBody() <!-- Este es el espacio donde se renderiza el contenido específico de cada vista -->
+            </div>
+        </div>
     </div>
 
     <footer class="bg-dark text-white text-center py-3">
@@ -44,9 +68,7 @@
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
     <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-
 </body>
 </html>

@@ -4,6 +4,7 @@ using SupportBilling.APPLICATION.Contract;
 using SupportBilling.DOMAIN.Entities;
 using SupportBilling.INFRASTRUCTURE.Context;
 using SupportBilling.API.DTOs;
+using System.Text.Json;
 
 namespace SupportBilling.API.Controllers
 {
@@ -25,10 +26,21 @@ namespace SupportBilling.API.Controllers
         [HttpGet]
         public async Task<IActionResult> GetAllInvoices()
         {
-            var invoices = await _invoiceService.GetAllInvoicesAsync();
-            if (invoices == null || !invoices.Any())
-                return NotFound("No invoices found.");
-            return Ok(invoices);
+            try
+            {
+                var invoices = await _context.Invoices
+                    .Include(i => i.Client)
+                    .Include(i => i.InvoiceDetails)
+                    .ThenInclude(d => d.Service)
+                    .Include(i => i.Status)
+                    .ToListAsync();
+
+                return Ok(invoices);
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, $"Internal server error: {ex.Message}");
+            }
         }
 
         // GET: api/Invoices/{id}
@@ -50,41 +62,60 @@ namespace SupportBilling.API.Controllers
 
             try
             {
-                // Resolver el estado "Pending"
-                var status = await _context.InvoiceStatuses
-                    .FirstOrDefaultAsync(s => s.Name == "Pending");
+                // Verificar si todos los ServiceId existen
+                var validServiceIds = await _context.Services
+                    .Where(s => invoiceDto.InvoiceDetails.Select(d => d.ServiceId).Contains(s.Id))
+                    .Select(s => s.Id)
+                    .ToListAsync();
+
+                var invalidServiceIds = invoiceDto.InvoiceDetails
+                    .Where(d => !validServiceIds.Contains(d.ServiceId))
+                    .Select(d => d.ServiceId)
+                    .ToList();
+
+                if (invalidServiceIds.Any())
+                    return BadRequest($"The following ServiceIds are invalid: {string.Join(", ", invalidServiceIds)}");
+
+                // Verificar el estado y convertirlo
+                var status = await _context.InvoiceStatus
+                    .FirstOrDefaultAsync(s => s.Name == invoiceDto.Status); // Busca el estado por nombre
 
                 if (status == null)
-                    return BadRequest("Pending status not found in the database.");
+                    return BadRequest($"The status '{invoiceDto.Status}' is not valid.");
 
-                // Mapear el DTO al modelo de dominio
                 var invoice = new Invoice
                 {
                     ClientId = invoiceDto.ClientId,
                     InvoiceDate = invoiceDto.InvoiceDate,
                     Tax = invoiceDto.Tax,
-                    StatusId = status.Id,
-                    Status = status,
+                    Status = status, // Asignar el objeto InvoiceStatus
                     InvoiceDetails = invoiceDto.InvoiceDetails.Select(d => new InvoiceDetail
                     {
                         ServiceId = d.ServiceId,
                         Quantity = d.Quantity,
-                        Price = d.Price
+                        Price = d.Price,
+                        Total = d.Quantity * d.Price // Calcular el Total
                     }).ToList()
                 };
 
-                // Calcular montos
-                invoice.Subtotal = invoice.InvoiceDetails.Sum(d => d.Quantity * d.Price);
+                // Calcular Subtotal y TotalAmount
+                invoice.Subtotal = invoice.InvoiceDetails.Sum(d => d.Total);
                 invoice.TotalAmount = invoice.Subtotal + (invoice.Subtotal * invoice.Tax / 100);
 
-                // Guardar en la base de datos
                 await _context.Invoices.AddAsync(invoice);
                 await _context.SaveChangesAsync();
 
                 return CreatedAtAction(nameof(GetInvoiceById), new { id = invoice.Id }, invoice);
             }
+            catch (DbUpdateException dbEx)
+            {
+                var innerException = dbEx.InnerException?.Message ?? dbEx.Message;
+                Console.WriteLine("Error al guardar la entidad: " + innerException);
+                return StatusCode(500, $"Database error: {innerException}");
+            }
             catch (Exception ex)
             {
+                Console.WriteLine("Error general: " + ex.Message);
                 return StatusCode(500, $"Internal server error: {ex.Message}");
             }
         }

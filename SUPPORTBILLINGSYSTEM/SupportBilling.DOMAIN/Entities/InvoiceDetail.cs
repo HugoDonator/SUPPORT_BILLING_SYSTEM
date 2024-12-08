@@ -30,7 +30,7 @@ namespace SupportBilling.DOMAIN.Entities
         public decimal Price { get; set; }
 
         // Propiedad calculada
-        public decimal Total => Quantity * Price;
+        public decimal Total { get; set; }
     }
 }
 

@@ -5,6 +5,7 @@
         public int ClientId { get; set; }
         public DateTime InvoiceDate { get; set; }
         public decimal Tax { get; set; }
+        public string? Status { get; set; }
         public ICollection<InvoiceDetailDto> InvoiceDetails { get; set; } = new List<InvoiceDetailDto>();
     }
 

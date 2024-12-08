@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders; // Asegúrate de tener este espacio de nombres
 using SupportBilling.DOMAIN.Entities;
 
 namespace SupportBilling.INFRASTRUCTURE.Context
@@ -13,42 +12,38 @@ namespace SupportBilling.INFRASTRUCTURE.Context
         public DbSet<Invoice> Invoices { get; set; }
         public DbSet<InvoiceDetail> InvoiceDetails { get; set; }
         public DbSet<Payment> Payments { get; set; }
-        public DbSet<InvoiceStatus> InvoiceStatuses { get; set; }
+        public DbSet<InvoiceStatus> InvoiceStatus { get; set; } // Usa el nombre exacto
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             
+            // Clave primaria para InvoiceStatus
+            modelBuilder.Entity<InvoiceStatus>()
+                .HasKey(s => s.Id);
 
-            modelBuilder.Entity<Invoice>(entity =>
-            {
-                entity.HasKey(i => i.Id);
-                entity.Property(i => i.Id)
-                      .ValueGeneratedOnAdd();
-            });
-
-            modelBuilder.Entity<Invoice>()
-                .HasOne(i => i.Client)
-                .WithMany()
-                .HasForeignKey(i => i.ClientId)
-                .OnDelete(DeleteBehavior.Cascade);
-
+            // Relación entre Invoice y InvoiceStatus
             modelBuilder.Entity<Invoice>()
                 .HasOne(i => i.Status)
                 .WithMany()
-                .HasForeignKey(i => i.StatusId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(i => i.StatusId);
 
+            // Relación entre Invoice y Client
+            modelBuilder.Entity<Invoice>()
+                .HasOne(i => i.Client)
+                .WithMany()
+                .HasForeignKey(i => i.ClientId);
+
+            // Relación entre InvoiceDetail y Invoice
             modelBuilder.Entity<InvoiceDetail>()
                 .HasOne(d => d.Invoice)
                 .WithMany(i => i.InvoiceDetails)
-                .HasForeignKey(d => d.InvoiceId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(d => d.InvoiceId);
 
+            // Relación entre InvoiceDetail y Service
             modelBuilder.Entity<InvoiceDetail>()
                 .HasOne(d => d.Service)
                 .WithMany()
-                .HasForeignKey(d => d.ServiceId)
-                .OnDelete(DeleteBehavior.Cascade);
+                .HasForeignKey(d => d.ServiceId);
         }
     }
 }

@@ -5,6 +5,7 @@ using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SupportBilling.DOMAIN.Entities;
+using SupportBilling.Web.DTOs;
 
 namespace SupportBilling.Web.Controllers
 {
@@ -38,7 +39,7 @@ namespace SupportBilling.Web.Controllers
                         ClientName = i.Client?.Name ?? "Unknown",
                         InvoiceDate = i.InvoiceDate,
                         TotalAmount = i.TotalAmount,
-                        Status = i.Status?.Name ?? "Unknown"
+                        Status = i.Status?.Name ?? "Pending"
                     }).ToList();
 
                     return View(viewModel);
@@ -67,48 +68,40 @@ namespace SupportBilling.Web.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create(InvoiceViewModel invoice)
         {
-            Console.WriteLine("Método Create POST ha sido llamado.");
-
             if (!ModelState.IsValid)
             {
-                foreach (var error in ModelState)
-                {
-                    foreach (var subError in error.Value.Errors)
-                    {
-                        Console.WriteLine($"Error en {error.Key}: {subError.ErrorMessage}");
-                    }
-                }
-                ModelState.AddModelError(string.Empty, "Hay errores en los datos proporcionados.");
                 await LoadClientsAndServicesAsync();
-                await LoadStatusesAsync();
                 return View(invoice);
             }
 
+            if (string.IsNullOrEmpty(invoice.Status))
+            {
+                invoice.Status = "Pending"; // Asignar valor predeterminado
+            }
             try
             {
+                // Serializa el modelo para enviarlo a la API
                 var jsonInvoice = JsonSerializer.Serialize(invoice);
-                Console.WriteLine("Payload enviado al servidor: " + jsonInvoice);
+
+                // Agrega el Console.WriteLine aquí
+                Console.WriteLine("Datos enviados al servidor: " + jsonInvoice);
 
                 var content = new StringContent(jsonInvoice, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("Invoices", content);
 
-                var responseBody = await response.Content.ReadAsStringAsync();
-                Console.WriteLine("Respuesta del servidor: " + responseBody);
-
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction(nameof(Index));
+                    return RedirectToAction("Index");
                 }
 
-                ModelState.AddModelError(string.Empty, $"Error: {response.ReasonPhrase}");
+                ModelState.AddModelError(string.Empty, "Error: Could not create invoice.");
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Unexpected error: {ex.Message}");
+                ModelState.AddModelError(string.Empty, $"Error: {ex.Message}");
             }
 
             await LoadClientsAndServicesAsync();
-            await LoadStatusesAsync();
             return View(invoice);
         }
 
