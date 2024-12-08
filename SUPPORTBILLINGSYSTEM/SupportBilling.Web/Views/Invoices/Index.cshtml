@@ -34,6 +34,7 @@
                         <a href="@Url.Action("Edit", "Invoices", new { id = invoice.Id })" class="btn btn-warning btn-sm">
                             <i class="fas fa-edit"></i> Edit
                         </a>
+                        
                         <form method="post" asp-action="Delete" asp-route-id="@invoice.Id" style="display:inline;">
                             <button type="submit" class="btn btn-danger btn-sm">
                                 <i class="fas fa-trash-alt"></i> Delete

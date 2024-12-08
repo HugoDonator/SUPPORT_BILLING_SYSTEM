@@ -59,9 +59,16 @@ namespace SupportBilling.API.Controllers
         {
             if (invoiceDto == null || invoiceDto.InvoiceDetails == null || !invoiceDto.InvoiceDetails.Any())
                 return BadRequest("Invoice data is invalid or missing details.");
+           
 
             try
             {
+                if(!int.TryParse(invoiceDto.ClientId.ToString(), out int clientId))
+        {
+                    return BadRequest("Client ID must be a valid integer.");
+                }
+
+                invoiceDto.ClientId = clientId;
                 // Verificar si todos los ServiceId existen
                 var validServiceIds = await _context.Services
                     .Where(s => invoiceDto.InvoiceDetails.Select(d => d.ServiceId).Contains(s.Id))

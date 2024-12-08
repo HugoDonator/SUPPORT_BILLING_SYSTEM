@@ -71,20 +71,27 @@ namespace SupportBilling.Web.Controllers
             if (!ModelState.IsValid)
             {
                 await LoadClientsAndServicesAsync();
+                await LoadStatusesAsync();
                 return View(invoice);
             }
 
-            if (string.IsNullOrEmpty(invoice.Status))
-            {
-                invoice.Status = "Pending"; // Asignar valor predeterminado
-            }
             try
             {
-                // Serializa el modelo para enviarlo a la API
-                var jsonInvoice = JsonSerializer.Serialize(invoice);
+                
+                var jsonInvoice = JsonSerializer.Serialize(new InvoiceCreateDto
+                {
+                    ClientId = Convert.ToInt32(invoice.ClientId),
+                    InvoiceDate = invoice.InvoiceDate,
+                    Tax = invoice.Tax,
+                    InvoiceDetails = invoice.InvoiceDetails.Select(d => new InvoiceDetailDto
+                    {
+                        ServiceId = d.ServiceId,
+                        Quantity = d.Quantity,
+                        Price = d.Price
+                    }).ToList()
+                });
 
-                // Agrega el Console.WriteLine aquí
-                Console.WriteLine("Datos enviados al servidor: " + jsonInvoice);
+                Console.WriteLine($"Request JSON: {jsonInvoice}");
 
                 var content = new StringContent(jsonInvoice, Encoding.UTF8, "application/json");
                 var response = await _httpClient.PostAsync("Invoices", content);
@@ -93,15 +100,21 @@ namespace SupportBilling.Web.Controllers
                 {
                     return RedirectToAction("Index");
                 }
-
-                ModelState.AddModelError(string.Empty, "Error: Could not create invoice.");
+                else
+                {
+                    var errorResponse = await response.Content.ReadAsStringAsync();
+                    Console.WriteLine($"API Error: {response.StatusCode} - {errorResponse}");
+                    ModelState.AddModelError(string.Empty, $"Error: {response.ReasonPhrase}. Details: {errorResponse}");
+                }
             }
             catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, $"Error: {ex.Message}");
+                Console.WriteLine($"Exception: {ex.Message}");
+                ModelState.AddModelError(string.Empty, $"Unexpected error: {ex.Message}");
             }
 
             await LoadClientsAndServicesAsync();
+            await LoadStatusesAsync();
             return View(invoice);
         }
 
@@ -152,11 +165,13 @@ namespace SupportBilling.Web.Controllers
 
             return RedirectToAction("Index");
         }
+        [HttpGet]
         public async Task<IActionResult> Edit(int id)
         {
             try
             {
                 var response = await _httpClient.GetAsync($"Invoices/{id}");
+                Console.WriteLine($"Request: Invoices/{id}, Status Code: {response.StatusCode}");
                 if (response.IsSuccessStatusCode)
                 {
                     var data = await response.Content.ReadAsStringAsync();

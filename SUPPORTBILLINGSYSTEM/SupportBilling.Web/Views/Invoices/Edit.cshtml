@@ -1,75 +1,67 @@
 ﻿@model SupportBilling.Web.Models.InvoiceViewModel
 
-<h1>Edit Invoice</h1>
+@{
+    ViewData["Title"] = "Edit Invoice";
+}
 
-<form method="post">
-    <div class="form-group mb-3">
-        <label for="ClientId">Client</label>
-        <select id="ClientId" class="form-control" asp-for="ClientId">
-            <option value="">-- Select Client --</option>
-            @foreach (var client in ViewBag.Clients)
-            {
-                <option value="@client.Value" @(client.Value == Model.ClientId.ToString() ? "selected" : "")>@client.Text</option>
-            }
-        </select>
+<h2>Edit Invoice</h2>
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" asp-for="Id" />
+
+    <div class="form-group">
+        <label asp-for="ClientId">Client</label>
+        <select asp-for="ClientId" asp-items="ViewBag.Clients" class="form-control"></select>
     </div>
 
-    <div class="form-group mb-3">
-        <label for="InvoiceDate">Invoice Date</label>
-        <input id="InvoiceDate" asp-for="InvoiceDate" type="date" class="form-control" required />
+    <div class="form-group">
+        <label asp-for="InvoiceDate">Invoice Date</label>
+        <input asp-for="InvoiceDate" class="form-control" />
     </div>
 
-    <div class="form-group mb-3">
-        <label for="Tax">Tax (%)</label>
-        <input id="Tax" asp-for="Tax" type="number" class="form-control" required />
+    <div class="form-group">
+        <label asp-for="Tax">Tax (%)</label>
+        <input asp-for="Tax" class="form-control" />
     </div>
 
-    <div class="form-group mb-3">
-        <label for="Status">Status</label>
-        <select id="Status" asp-for="Status" class="form-control">
-            <option value="Pending" @(Model.Status == "Pending" ? "selected" : "")>Pending</option>
-            <option value="Paid" @(Model.Status == "Paid" ? "selected" : "")>Paid</option>
-        </select>
+    <div class="form-group">
+        <label asp-for="Status">Status</label>
+        <select asp-for="Status" asp-items="ViewBag.Statuses" class="form-control"></select>
     </div>
 
-    <h4>Invoice Details</h4>
-    <table class="table">
-        <thead>
-            <tr>
-                <th>Service</th>
-                <th>Quantity</th>
-                <th>Price</th>
-                <th>Total</th>
-            </tr>
-        </thead>
-        <tbody id="invoice-details-body">
-            @for (int detailIndex = 0; detailIndex < Model.InvoiceDetails.Count; detailIndex++)
-            {
-                var detail = Model.InvoiceDetails[detailIndex];
+    <div class="form-group">
+        <label>Invoice Details</label>
+        <table class="table">
+            <thead>
                 <tr>
-                    <td>
-                        <select name="InvoiceDetails[@detailIndex].ServiceId" class="form-control">
-                            <option value="">-- Select Service --</option>
-                            @foreach (var service in ViewBag.Services)
-                            {
-                                <option value="@service.Id" @(service.Id == detail.ServiceId ? "selected" : "")>@service.Name</option>
-                            }
-                        </select>
-                    </td>
-                    <td>
-                        <input name="InvoiceDetails[@detailIndex].Quantity" class="form-control" value="@detail.Quantity" />
-                    </td>
-                    <td>
-                        <input name="InvoiceDetails[@detailIndex].Price" class="form-control" value="@detail.Price" readonly />
-                    </td>
-                    <td>
-                        <input name="InvoiceDetails[@detailIndex].Total" class="form-control" value="@detail.Total" readonly />
-                    </td>
+                    <th>Service</th>
+                    <th>Quantity</th>
+                    <th>Price</th>
+                    <th>Total</th>
                 </tr>
-            }
-        </tbody>
-    </table>
+            </thead>
+            <tbody>
+                @for (int i = 0; i < Model.InvoiceDetails.Count; i++)
+                {
+                    <tr>
+                        <td>
+                            <input asp-for="InvoiceDetails[i].ServiceId" class="form-control" />
+                        </td>
+                        <td>
+                            <input asp-for="InvoiceDetails[i].Quantity" class="form-control" />
+                        </td>
+                        <td>
+                            <input asp-for="InvoiceDetails[i].Price" class="form-control" />
+                        </td>
+                        <td>
+                            <input asp-for="InvoiceDetails[i].Total" class="form-control" readonly />
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 
     <button type="submit" class="btn btn-primary">Save Changes</button>
-    <a href="@Url.Action("Index", "Invoices")" class="btn btn-secondary">Back</a>
+    <a asp-action="Index" class="btn btn-secondary">Cancel</a>
 </form>

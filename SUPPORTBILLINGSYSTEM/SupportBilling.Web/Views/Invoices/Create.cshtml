@@ -12,13 +12,9 @@
         <form id="invoiceForm">
             <!-- Client -->
             <div class="form-group mb-3">
-                <label for="ClientId">Client</label>
-                <select id="ClientId" class="form-control">
+                <label asp-for="ClientId">Client</label>
+                <select asp-for="ClientId" asp-items="ViewBag.Clients" class="form-control">
                     <option value="">-- Select Client --</option>
-                    @foreach (var client in ViewBag.Clients)
-                    {
-                        <option value="@client.Value">@client.Text</option>
-                    }
                 </select>
             </div>
 
@@ -180,5 +176,8 @@
             button.closest('tr').remove();
             calculateTotal();
         }
+        document.getElementById("ClientId").addEventListener("change", function () {
+            this.value = parseInt(this.value, 10) || "";
+        });
     </script>
 }
