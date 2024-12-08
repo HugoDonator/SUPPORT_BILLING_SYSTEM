@@ -4,39 +4,47 @@
     ViewData["Title"] = "Services List";
 }
 
-<h1>Services List</h1>
+<h1 class="text-center mb-4">Services List</h1>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Price</th>
-            <th>Actions</th> <!-- Columna para los botones de acción -->
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var service in Model)
-        {
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
             <tr>
-                <td>@service.Name</td>
-                <td>@service.Description</td>
-                <td>@service.Price.ToString("C")</td>
-                <td>
-                    <!-- Botón de editar -->
-                    <a href="@Url.Action("Edit", "Services", new { id = service.Id })" class="btn btn-warning btn-sm">Edit</a>
-
-                    <!-- Formulario para eliminar el servicio -->
-                    <form asp-controller="Services" asp-action="Delete" method="post" style="display:inline;">
-                        <input type="hidden" name="id" value="@service.Id" />
-                        <input type="hidden" name="_method" value="DELETE" />  <!-- Esto simula el método DELETE -->
-                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
-                    </form>
-                </td>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Actions</th> <!-- Columna para los botones de acción -->
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var service in Model)
+            {
+                <tr>
+                    <td>@service.Name</td>
+                    <td>@service.Description</td>
+                    <td>@service.Price.ToString("C")</td>
+                    <td>
+                        <!-- Botón de editar -->
+                        <a href="@Url.Action("Edit", "Services", new { id = service.Id })" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
 
-<a href="@Url.Action("Create", "Services")" class="btn btn-primary">Create New Service</a>
+                        <!-- Botón de eliminar -->
+                        <form asp-controller="Services" asp-action="Delete" method="post" style="display:inline;">
+                            <input type="hidden" name="id" value="@service.Id" />
+                            <input type="hidden" name="_method" value="DELETE" />  <!-- Esto simula el método DELETE -->
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
+<!-- Botón para crear nuevo servicio -->
+<a href="@Url.Action("Create", "Services")" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Create New Service
+</a>

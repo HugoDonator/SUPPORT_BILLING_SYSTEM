@@ -125,5 +125,96 @@ namespace SupportBilling.Web.Controllers
             ViewBag.Statuses = new SelectList(new List<string> { "Pending", "Paid" });
             return Task.CompletedTask;
         }
+        // Delete: /Invoices/Delete/{id}
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Delete(int id)
+        {
+            try
+            {
+                // Enviar una solicitud DELETE a la API
+                var response = await _httpClient.DeleteAsync($"Invoices/{id}");
+
+                if (response.IsSuccessStatusCode)
+                {
+                    // Redirigir a la vista de la lista de facturas después de eliminarla
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Error: Could not delete invoice.");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error: {ex.Message}");
+            }
+
+            return RedirectToAction("Index");
+        }
+        public async Task<IActionResult> Edit(int id)
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync($"Invoices/{id}");
+                if (response.IsSuccessStatusCode)
+                {
+                    var data = await response.Content.ReadAsStringAsync();
+                    var invoice = JsonSerializer.Deserialize<InvoiceViewModel>(data, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    // Cargar los datos de clientes y servicios para el select en la vista
+                    await LoadClientsAndServicesAsync();
+                    await LoadStatusesAsync();
+
+                    return View(invoice); // Pasar el modelo a la vista
+                }
+                else
+                {
+                    ModelState.AddModelError(string.Empty, "Error: Unable to fetch invoice data.");
+                    return RedirectToAction("Index");
+                }
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Unexpected error: {ex.Message}");
+                return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Edit(InvoiceViewModel invoice)
+        {
+            if (!ModelState.IsValid)
+            {
+                await LoadClientsAndServicesAsync();
+                return View(invoice);
+            }
+
+            try
+            {
+                var jsonInvoice = JsonSerializer.Serialize(invoice);
+                var content = new StringContent(jsonInvoice, Encoding.UTF8, "application/json");
+                var response = await _httpClient.PutAsync($"Invoices/{invoice.Id}", content);
+
+                if (response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Index");
+                }
+
+                ModelState.AddModelError(string.Empty, "Error: Unable to update invoice.");
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, $"Error: {ex.Message}");
+            }
+
+            await LoadClientsAndServicesAsync();
+            return View(invoice);
+        }
+
     }
 }

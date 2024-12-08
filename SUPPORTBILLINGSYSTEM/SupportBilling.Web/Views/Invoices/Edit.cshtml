@@ -1,0 +1,75 @@
+﻿@model SupportBilling.Web.Models.InvoiceViewModel
+
+<h1>Edit Invoice</h1>
+
+<form method="post">
+    <div class="form-group mb-3">
+        <label for="ClientId">Client</label>
+        <select id="ClientId" class="form-control" asp-for="ClientId">
+            <option value="">-- Select Client --</option>
+            @foreach (var client in ViewBag.Clients)
+            {
+                <option value="@client.Value" @(client.Value == Model.ClientId.ToString() ? "selected" : "")>@client.Text</option>
+            }
+        </select>
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="InvoiceDate">Invoice Date</label>
+        <input id="InvoiceDate" asp-for="InvoiceDate" type="date" class="form-control" required />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Tax">Tax (%)</label>
+        <input id="Tax" asp-for="Tax" type="number" class="form-control" required />
+    </div>
+
+    <div class="form-group mb-3">
+        <label for="Status">Status</label>
+        <select id="Status" asp-for="Status" class="form-control">
+            <option value="Pending" @(Model.Status == "Pending" ? "selected" : "")>Pending</option>
+            <option value="Paid" @(Model.Status == "Paid" ? "selected" : "")>Paid</option>
+        </select>
+    </div>
+
+    <h4>Invoice Details</h4>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Service</th>
+                <th>Quantity</th>
+                <th>Price</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody id="invoice-details-body">
+            @for (int detailIndex = 0; detailIndex < Model.InvoiceDetails.Count; detailIndex++)
+            {
+                var detail = Model.InvoiceDetails[detailIndex];
+                <tr>
+                    <td>
+                        <select name="InvoiceDetails[@detailIndex].ServiceId" class="form-control">
+                            <option value="">-- Select Service --</option>
+                            @foreach (var service in ViewBag.Services)
+                            {
+                                <option value="@service.Id" @(service.Id == detail.ServiceId ? "selected" : "")>@service.Name</option>
+                            }
+                        </select>
+                    </td>
+                    <td>
+                        <input name="InvoiceDetails[@detailIndex].Quantity" class="form-control" value="@detail.Quantity" />
+                    </td>
+                    <td>
+                        <input name="InvoiceDetails[@detailIndex].Price" class="form-control" value="@detail.Price" readonly />
+                    </td>
+                    <td>
+                        <input name="InvoiceDetails[@detailIndex].Total" class="form-control" value="@detail.Total" readonly />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="@Url.Action("Index", "Invoices")" class="btn btn-secondary">Back</a>
+</form>

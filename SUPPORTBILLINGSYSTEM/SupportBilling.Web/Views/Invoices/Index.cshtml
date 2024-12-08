@@ -1,34 +1,52 @@
 ﻿@model IEnumerable<SupportBilling.Web.Models.InvoiceViewModel>
 
-<h1>Invoices List</h1>
+<h1 class="text-center mb-4">Invoices List</h1>
 
-<table class="table">
-    <thead>
-        <tr>
-            <th>Client</th>
-            <th>Invoice Date</th>
-            <th>Total Amount</th>
-            <th>Status</th>
-            <th>Actions</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var invoice in Model)
-        {
+<div class="table-responsive">
+    <table class="table table-hover align-middle">
+        <thead class="table-dark">
             <tr>
-                <td>@invoice.ClientName</td>
-                <td>@invoice.InvoiceDate.ToShortDateString()</td>
-                <td>@invoice.TotalAmount.ToString("C")</td>
-                <td>@invoice.Status</td>
-                <td>
-                    <a href="@Url.Action("Edit", "Invoices", new { id = invoice.Id })" class="btn btn-warning">Edit</a>
-                    <form method="post" asp-action="Delete" asp-route-id="@invoice.Id" style="display:inline;">
-                        <button type="submit" class="btn btn-danger">Delete</button>
-                    </form>
-                </td>
+                <th>Client</th>
+                <th>Invoice Date</th>
+                <th>Total Amount</th>
+                <th>Status</th>
+                <th>Actions</th>
             </tr>
-        }
-    </tbody>
-</table>
+        </thead>
+        <tbody>
+            @foreach (var invoice in Model)
+            {
+                <tr>
+                    <td>@invoice.ClientName</td>
+                    <td>@invoice.InvoiceDate.ToShortDateString()</td>
+                    <td>@invoice.TotalAmount.ToString("C")</td>
+                    <td>
+                        @if (invoice.Status == "Paid")
+                        {
+                            <span class="badge bg-success"><i class="fas fa-check-circle"></i> Paid</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-warning text-dark"><i class="fas fa-hourglass-half"></i> Pending</span>
+                        }
+                    </td>
+                    <td>
+                        <a href="@Url.Action("Edit", "Invoices", new { id = invoice.Id })" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <form method="post" asp-action="Delete" asp-route-id="@invoice.Id" style="display:inline;">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="fas fa-trash-alt"></i> Delete
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
 
-<a href="@Url.Action("Create", "Invoices")" class="btn btn-primary">Create New Invoice</a>
+<!-- Botón para crear nueva factura -->
+<a href="@Url.Action("Create", "Invoices")" class="btn btn-primary">
+    <i class="fas fa-plus"></i> Create New Invoice
+</a>
