@@ -78,3 +78,20 @@ ADD Status NVARCHAR(50) NOT NULL DEFAULT 'Pendiente';
 select * from Invoices
 select * from InvoiceDetails
 
+ALTER TABLE Invoices
+ADD Tax DECIMAL(5, 2) NOT NULL DEFAULT 0.00;
+
+
+ALTER TABLE Invoices
+ADD Subtotal DECIMAL(18, 2) NOT NULL DEFAULT 0.00;
+ALTER TABLE InvoiceDetails
+ADD Total DECIMAL(18, 2) AS (Quantity * Price) PERSISTED;
+
+ALTER TABLE InvoiceDetails DROP COLUMN Total;
+
+SELECT COLUMN_NAME 
+FROM INFORMATION_SCHEMA.COLUMNS 
+WHERE TABLE_NAME = 'InvoiceDetails';
+
+ALTER TABLE InvoiceDetails
+ADD Total AS (Quantity * Price) PERSISTED;

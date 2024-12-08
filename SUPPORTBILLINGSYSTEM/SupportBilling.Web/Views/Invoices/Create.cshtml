@@ -1,0 +1,133 @@
+﻿@using System.Text.Json
+@model SupportBilling.Web.Models.InvoiceViewModel
+
+@{
+    ViewData["Title"] = "Create Invoice";
+}
+
+<h1>Create Invoice</h1>
+
+<div class="row">
+    <div class="col-md-6">
+        <form asp-controller="Invoices" asp-action="Create" method="post">
+            <!-- Client -->
+            <div class="form-group mb-3">
+                <label asp-for="ClientId">Client</label>
+                <select asp-for="ClientId" asp-items="ViewBag.Clients" class="form-control">
+                    <option value="">-- Select Client --</option>
+                </select>
+                <span asp-validation-for="ClientId" class="text-danger"></span>
+            </div>
+
+            <!-- Invoice Date -->
+            <div class="form-group mb-3">
+                <label asp-for="InvoiceDate">Invoice Date</label>
+                <input asp-for="InvoiceDate" type="date" class="form-control" />
+                <span asp-validation-for="InvoiceDate" class="text-danger"></span>
+            </div>
+
+            <!-- Tax -->
+            <div class="form-group mb-3">
+                <label asp-for="Tax">Tax (%)</label>
+                <input asp-for="Tax" class="form-control" oninput="calculateTotal()" />
+                <span asp-validation-for="Tax" class="text-danger"></span>
+            </div>
+
+            <!-- Invoice Details -->
+            <div>
+                <h4>Invoice Details</h4>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Service</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="invoice-details-body"></tbody>
+                </table>
+                <button type="button" class="btn btn-secondary" onclick="addInvoiceDetail()">Add Service</button>
+            </div>
+
+            <!-- Subtotal -->
+            <div class="form-group mb-3">
+                <label asp-for="Subtotal">Subtotal</label>
+                <input id="Subtotal" asp-for="Subtotal" class="form-control" readonly />
+            </div>
+
+            <!-- Total Amount -->
+            <div class="form-group mb-3">
+                <label asp-for="TotalAmount">Total Amount</label>
+                <input id="TotalAmount" asp-for="TotalAmount" class="form-control" readonly />
+            </div>
+
+            <!-- Buttons -->
+            <button type="submit" class="btn btn-primary">Create</button>
+            <a asp-action="Index" class="btn btn-secondary">Back to Index</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const services = @Html.Raw(JsonSerializer.Serialize(ViewBag.Services));
+        let detailIndex = 0;
+
+        function addInvoiceDetail() {
+            const row = `
+                <tr>
+                    <td>
+                        <select name="InvoiceDetails[${detailIndex}].ServiceId" class="form-control" onchange="updatePrice(this)">
+                            <option value="">-- Select Service --</option>
+                            ${services.map(s => `<option value="${s.Id}">${s.Name}</option>`).join('')}
+                        </select>
+                    </td>
+                    <td>
+                        <input name="InvoiceDetails[${detailIndex}].Quantity" class="form-control" oninput="updateTotal(this)" />
+                    </td>
+                    <td>
+                        <input name="InvoiceDetails[${detailIndex}].Price" class="form-control price" readonly />
+                    </td>
+                    <td>
+                        <input name="InvoiceDetails[${detailIndex}].Total" class="form-control total" readonly />
+                    </td>
+                    <td>
+                        <button type="button" class="btn btn-danger" onclick="removeRow(this)">Remove</button>
+                    </td>
+                </tr>
+            `;
+            document.getElementById("invoice-details-body").insertAdjacentHTML("beforeend", row);
+            detailIndex++;
+        }
+
+        function updatePrice(select) {
+            const service = services.find(s => s.Id == select.value);
+            const row = select.closest('tr');
+            row.querySelector('.price').value = service ? service.Price : 0;
+            updateTotal(row.querySelector('[name*="Quantity"]'));
+        }
+
+        function updateTotal(input) {
+            const row = input.closest('tr');
+            const quantity = parseFloat(input.value) || 0;
+            const price = parseFloat(row.querySelector('.price').value) || 0;
+            row.querySelector('.total').value = (quantity * price).toFixed(2);
+            calculateTotal();
+        }
+
+        function calculateTotal() {
+            const totals = [...document.querySelectorAll('.total')];
+            const subtotal = totals.reduce((sum, el) => sum + parseFloat(el.value || 0), 0);
+            document.getElementById("Subtotal").value = subtotal.toFixed(2);
+            const tax = parseFloat(document.getElementById("Tax").value || 0);
+            document.getElementById("TotalAmount").value = (subtotal + (subtotal * tax / 100)).toFixed(2);
+        }
+
+        function removeRow(button) {
+            button.closest('tr').remove();
+            calculateTotal();
+        }
+    </script>
+}

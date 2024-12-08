@@ -1,0 +1,34 @@
+﻿@model IEnumerable<SupportBilling.Web.Models.InvoiceViewModel>
+
+<h1>Invoices List</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Client</th>
+            <th>Invoice Date</th>
+            <th>Total Amount</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var invoice in Model)
+        {
+            <tr>
+                <td>@invoice.ClientName</td>
+                <td>@invoice.InvoiceDate.ToShortDateString()</td>
+                <td>@invoice.TotalAmount.ToString("C")</td>
+                <td>@invoice.Status</td>
+                <td>
+                    <a href="@Url.Action("Edit", "Invoices", new { id = invoice.Id })" class="btn btn-warning">Edit</a>
+                    <form method="post" asp-action="Delete" asp-route-id="@invoice.Id" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a href="@Url.Action("Create", "Invoices")" class="btn btn-primary">Create New Invoice</a>

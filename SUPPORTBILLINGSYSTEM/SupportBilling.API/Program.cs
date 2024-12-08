@@ -1,10 +1,9 @@
-// File: SupportBilling.API/Program.cs
 using Microsoft.EntityFrameworkCore;
 using SupportBilling.APPLICATION.Contract;
 using SupportBilling.APPLICATION.Service;
 using SupportBilling.INFRASTRUCTURE.Context;
 using SupportBilling.INFRASTRUCTURE.Repositories;
-using SupportBilling.DOMAIN.Entities;
+using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,20 +23,26 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 builder.Services.AddDbContext<BillingDbContext>(options =>
     options.UseSqlServer(connectionString));
 
-// Registrar los servicios de aplicación (IClientService, IServiceService, IInvoiceService)
-builder.Services.AddScoped<IClientService, ClientService>();
-builder.Services.AddScoped<IServiceService, ServiceService>();
-builder.Services.AddScoped<IInvoiceService, InvoiceService>();
-builder.Services.AddHttpClient();
-// Registrar los repositorios genéricos
-builder.Services.AddScoped(typeof(BaseRepository<>));
-
-// Configurar controladores (eliminar llamada duplicada)
-builder.Services.AddControllers();
+// Configurar controladores y habilitar manejo de referencias circulares
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles; // Maneja ciclos sin metadatos
+        options.JsonSerializerOptions.WriteIndented = true; // JSON formateado
+    });
 
 // Configuración de Swagger para la documentación de API
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// Registrar los servicios de aplicación
+builder.Services.AddScoped<IClientService, ClientService>();
+builder.Services.AddScoped<IServiceService, ServiceService>();
+builder.Services.AddScoped<IInvoiceService, InvoiceService>();
+
+
+// Registrar el repositorio genérico
+builder.Services.AddScoped(typeof(BaseRepository<>));
 
 var app = builder.Build();
 
@@ -48,13 +53,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// Habilitar CORS antes de los demás middleware
+// Habilitar CORS
 app.UseCors("AllowAll");
 
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
 
+// Map Controllers (sin usar UseEndpoints)
 app.MapControllers();
 
 app.Run();

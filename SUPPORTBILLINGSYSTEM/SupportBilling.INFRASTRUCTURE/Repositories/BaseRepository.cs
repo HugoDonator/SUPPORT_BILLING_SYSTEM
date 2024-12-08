@@ -1,42 +1,69 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SupportBilling.INFRASTRUCTURE.Context;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace SupportBilling.INFRASTRUCTURE.Repositories
 {
-    public class BaseRepository<TEntity> where TEntity : class
+    public class BaseRepository<T> where T : class
     {
         protected readonly BillingDbContext _context;
+        private readonly DbSet<T> _dbSet;
 
         public BaseRepository(BillingDbContext context)
         {
             _context = context;
+            _dbSet = _context.Set<T>();
         }
 
-        public async Task<IEnumerable<TEntity>> GetAllAsync() => await _context.Set<TEntity>().ToListAsync();
-        public async Task<TEntity?> GetByIdAsync(int id) => await _context.Set<TEntity>().FindAsync(id);
-        public async Task AddAsync(TEntity entity)
+        public IQueryable<T> GetQueryable()
         {
-            await _context.Set<TEntity>().AddAsync(entity);
+            return _dbSet.AsQueryable();
+        }
+        public BillingDbContext Context => _context;
+        public async Task<T> GetByIdAsync(int id)
+        {
+            return await _dbSet.FindAsync(id);
+        }
+
+        public async Task<IEnumerable<T>> GetAllAsync()
+        {
+            return await _dbSet.ToListAsync();
+        }
+
+        public async Task AddAsync(T entity)
+        {
+            await _dbSet.AddAsync(entity);
             await _context.SaveChangesAsync();
         }
-        public async Task UpdateAsync(TEntity entity)
+
+        public async Task UpdateAsync(T entity)
         {
-            _context.Entry(entity).State = EntityState.Modified;
+            _dbSet.Update(entity);
             await _context.SaveChangesAsync();
         }
+
+        // Actualizar múltiples registros
+        public async Task UpdateRangeAsync(IEnumerable<T> entities)
+        {
+            _dbSet.UpdateRange(entities);
+            await _context.SaveChangesAsync();
+        }
+
         public async Task DeleteAsync(int id)
         {
             var entity = await GetByIdAsync(id);
             if (entity != null)
             {
-                _context.Set<TEntity>().Remove(entity);
+                _dbSet.Remove(entity);
                 await _context.SaveChangesAsync();
             }
+        }
+
+        // Eliminar múltiples registros
+        public async Task DeleteRangeAsync(IEnumerable<int> ids)
+        {
+            var entities = await _dbSet.Where(e => ids.Contains((int)e.GetType().GetProperty("Id").GetValue(e))).ToListAsync();
+            _dbSet.RemoveRange(entities);
+            await _context.SaveChangesAsync();
         }
     }
 }
